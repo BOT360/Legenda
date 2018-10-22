@@ -1,11 +1,15 @@
 from BotHandler import BotHandler
 from multiprocessing import Pool
 from multiprocessing import Process
+from configuration import ConfigParser
 import threading
 
 import time
 
-bot = BotHandler("577977683:AAFSJJp1Hf_ej1Cve58v5mdY90UhaWdmlwI")  
+CONFIG_FILE_NAME = "settings.ini"
+config=ConfigParser()
+config.read(CONFIG_FILE_NAME,"utf_8_sig")
+bot = BotHandler(config.get("botsettings","token"))  
 
 
 def main():
