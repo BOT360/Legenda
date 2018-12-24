@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+{% block nav %}
+<h3>Бот ХК-Легенда</h3>
+<a href="{{url_for('settings')}}">Настройки</a>
+<a href="{{url_for('home')}}">Таблицы</a>
+<a class="menu-active" href="{{url_for('show_logs')}}">Логи</a>
+<a href="{{url_for('show_users')}}">Пользователи</a>
+<a class="logout mb-4" href="{{url_for('logout')}}">Выйти</a>
+</div>
+{% endblock nav %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+<script type="text/javascript" class="init">
+$(document).ready(function() {
+    $('#myTable').DataTable({
+        deferRender: true,
+        "order": [
+            [4, "desc"]
+        ],
+        "ajax": { url: "{{ url_for('get_logs') }}", dataSrc: "" },
+        "language": {
+            "search": "Фильтр:",
+            "lengthMenu": "Показать _MENU_ записей",
+            "info": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "infoEmpty": "Показано 0 записей",
+            "loadingRecords": "Загрузка...",
+            "emptyTable": "Нет данных, попробуйте выбрать другой период",
+            "paginate": {
+                "previous": "Пред.",
+                "next": "След."
+            }
+        },
+        // add column definitions to map your json to the table
+        "columns": [
+            { data: "id", title: "ID" },
+            { data: "action_", title: "Действие" },
+            { data: "phone_number", title: "Номер" },
+            { data: "message", title: "Сообщение" },
+            {
+                data: "date_time",
+                title: "Время",
+                def: function() { return new Date(); },
+                format: 'M/D/YYYY',
+            },
+            { data: "additional_info", title: "Инфо" },
+        ],
+        "columnDefs": [
+            { "type": "date-euro", targets: 4 },
+            {
+
+                render: function(data, type, full, meta) {
+                    return '<div style="white-space:normal; width:300px; word-wrap: break-word;">' + data + '</div>';
+                },
+                targets: [3, 5]
+            }
+        ]
+    });
+});
+</script>
+<form action="/show_logs" id="tablesForm" method="POST">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col">С: <input type="date" name="dateFrom" class="form-control date w-100" value="{{dateFrom}}"></div>
+            <div class="col">По:<input type="date" name="dateTo" class="form-control date w-100" value="{{dateTo}}"></div>
+            <div class="col"> <input type="submit" name="edit" value="Показать" style="bottom: 0;" class="btn btn-success mt-4 w-100 align-bottom"></div>
+            <div class="col">
+            </div>
+            <div class="col">
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col">
+                <div class="container-fluid"><label>
+                        {% if devMode %}
+                        <input type="checkbox" name="developerMode" class="checkbox" checked="checked">
+                        {% else %}
+                        <input type="checkbox" name="developerMode" class="checkbox">
+                        {% endif %}
+                        Показывать системные записи</label>
+                </div>
+            </div>
+        </div>
+        <table id="myTable" class="display dataTable" style="width: 100%;" role:"grid"></table>
+    </div>
+</form>
+{% endblock content %}

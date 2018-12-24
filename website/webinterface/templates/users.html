@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block nav %}
+<h3>Бот ХК-Легенда</h3>
+<a href="{{url_for('settings')}}">Настройки</a>
+<a href="{{url_for('home')}}">Таблицы</a>
+<a href="{{url_for('show_logs')}}">Логи</a>
+<a class="menu-active" href="{{url_for('show_users')}}">Пользователи</a>
+<a class="logout mb-4" href="{{url_for('logout')}}">Выйти</a>
+</div>
+{% endblock nav %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+<script type="text/javascript" class="init">
+$(document).ready(function() {
+    $('#myTable').DataTable({
+        deferRender: true,
+
+        "ajax": { url: "{{ url_for('get_users') }}", dataSrc: "" },
+        "language": {
+            "search": "Фильтр:",
+            "lengthMenu": "Показать _MENU_ записей",
+            "info": "Показано с _START_ по _END_ из _TOTAL_ записей",
+            "infoEmpty": "Показано 0 записей",
+            "loadingRecords": "Загрузка...",
+            "paginate": {
+                "previous": "Пред.",
+                "next": "След."
+            }
+        },
+        // add column definitions to map your json to the table
+        "columns": [
+            { data: "id", title: "ID" },
+            { data: "user_name", title: "Имя" },
+            { data: "phone_number", title: "Номер" },
+            { data: "chat_id", title: "ID чата" },
+            { data: "status", title: "Статус" },
+            { data: "sms_code", title: "СМС код" },
+            { data: "role", title: "Роль" }
+        ]
+    });
+});
+</script>
+<form action="/show_users" id="tablesForm" method="POST">
+    <div id="messages" class="container-fluid">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col">Номер телефона: <input type="text" name="phoneNumber" class="form-control w-100" value=""></div>
+            <div class="col">Роль:
+                <select class="form-control" name="role">
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="USER">USER</option>
+                </select>
+            </div>
+            <div class="col"> <input type="submit" name="edit" value="Привязать" style="bottom: 0;" class="btn btn-success mt-4 w-100 align-bottom"></div>
+            <div class="col">
+            </div>
+            <div class="col">
+            </div>
+        </div>
+    </div>
+    </div>
+    <table id="myTable" class="display dataTable" style="width: 100%;" role:"grid"></table>
+    </div>
+</form>
+{% endblock content %}

@@ -1,0 +1,223 @@
+{% from "_formhelpers.html" import render_input %}
+{% extends "layout.html" %}
+{% block nav %}
+<h3>Бот ХК-Легенда</h3>
+<a href="{{url_for('settings')}}">Настройки</a>
+<a class="menu-active" href="{{url_for('home')}}">Таблицы</a>
+<a href="{{url_for('show_logs')}}">Логи</a>
+<a href="{{url_for('show_users')}}">Пользователи</a>
+<a class="logout mb-4" href="{{url_for('logout')}}">Выйти</a>
+</div>
+{% endblock nav %}
+{% block content %}
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript">
+$(document).on('click', '.add-row', function() {
+    var tableid = event.target.attributes['tableid'].value;
+    var uniqud = Math.round(new Date().getTime() + (Math.random() * 100));
+    var markup = '<tr sheetid="new">' +
+        '<td>' +
+        '<input type="hidden" name="spreadsheetnew' + uniqud + '_id" value="new">' +
+        '<input type="hidden" name="spreadsheetnew' + uniqud + '_tableid" value="' + tableid + '">' +
+        '<input type="text" class="form-control form-control-sm mb-3" name="spreadsheetnew' + uniqud + '_datecol" value=""/></td>' +
+        '<td><input type="text" class="form-control form-control-sm mb-3" name="spreadsheetnew' + uniqud + '_statuscol" /></td>' +
+        '<td><input type="text" class="form-control form-control-sm mb-3" name="spreadsheetnew' + uniqud + '_sendedcol" /></td>' +
+        '<td><input type="text" class="form-control form-control-sm mb-3" name="spreadsheetnew' + uniqud + '_textcol" /></td>' +
+        '<td><input type="text" class="form-control form-control-sm mb-3" name="spreadsheetnew' + uniqud + '_numbercol" /></td>' +
+        '<td><input type="text" class="form-control form-control-sm mb-3" name="spreadsheetnew' + uniqud + '_sheetname" /></td>' +
+        '<td><input type="button" name="delete_sheet" value="X" class="btn btn-outline-danger btn-sm delete-sheet mb-3 w-100"></td>' +
+        '</tr>';
+    var tablename = 'gtable' + tableid;
+    $("table[name=" + tablename + "]").prepend(markup);
+});
+
+$(document).on('paste input', '.id-input', function() {
+    $(event.target).height(0);
+    var height = $(event.target).prop('scrollHeight');
+    $(event.target).height(height - 6);
+    // for box-sizing other than "content-box" use:
+    // el.style.cssText = '-moz-box-sizing:content-box';
+});
+
+$(document).on('paste input', '.form-control', function() {
+
+    if (!$('#save-mesage').length) // use this if you are using id to check
+    {
+        var markup = '<div id="save-mesage" class="alert alert-info">' +
+            'Чтобы применить изменения, нажмите кнопку сохранить' +
+            '</div>';
+        $("#messages").prepend(markup);
+    }
+});
+
+$(document).on('click', '.btn', function() {
+    if (!$('#save-mesage').length) // use this if you are using id to check
+    {
+        var markup = '<div id="save-mesage" class="alert alert-info">' +
+            'Чтобы применить изменения, нажмите кнопку сохранить' +
+            '</div>';
+        $("#messages").prepend(markup);
+    }
+});
+
+$(document).on('click', '.delete-table', function() {
+
+    var tableid = event.target.attributes['tableid'].value;
+    $(event.target).parents('.content-section').remove();
+    var markup = '<input type="hidden" name="deletedtable' + tableid + '_id" value="' + tableid + '">';
+    $("#tablesForm").prepend(markup);
+});
+
+$(document).on('click', '.delete-sheet', function() {
+    var sheetid = $(event.target).parents('tr')[0].attributes['sheetid'].value;
+    $(event.target).parents('tr')[0].remove();
+    var markup = '<input type="hidden" name="deletedsheet' + sheetid + '_id" value="' + sheetid + '">';
+    $("#tablesForm").prepend(markup);
+});
+
+$(document).ready(function() {
+
+    $('.id-input').height(0);
+    var height = $('.id-input').prop('scrollHeight');
+    $('.id-input').height(height - 6);
+
+    $(".add-table").click(function() {
+        var uniqud = Math.round(new Date().getTime() + (Math.random() * 100));
+        var markup = '<gtable class="media content-section">' +
+            '<div class="article-metadata w-100">' +
+            '<table class="table-sm w-100">' +
+            '<tr>' +
+            '<td class="w-100">' +
+            '<input type="hidden" name="gtablenew' + uniqud + '_id" value="new' + uniqud + '">' +
+            '<textarea style="resize: none;" class="form-control form-control-sm mb-6 id-input" name="gtable' + uniqud + '_spreadsheetid"></textarea>' +
+            '</td>' +
+            '<td class="w-5"><input name="add_sheet" type="button" tableid="new' + uniqud + '" value="+" class="btn btn-outline-info btn-sm add-row"></td>' +
+            '<td class="w-5"><input name="delete_table" type="button" tableid="new' + uniqud + '" value="X" class="btn btn-outline-danger btn-sm delete-table"></td>' +
+            '</tr>' +
+            '<tr>' +
+            '<table name="gtablenew' + uniqud + '" class="table table-sm">' +
+            '<thead>' +
+            '<tr>' +
+            '<th scope="col">Дата</th>' +
+            '<th scope="col">Статус</th>' +
+            '<th scope="col">Отправлено</th>' +
+            '<th scope="col">Текст</th>' +
+            '<th scope="col">Номер</th>' +
+            '<th scope="col">Лист</th>' +
+            '</tr>' +
+            '</thead>' +
+            '<tbody>' +
+            '</tbody>' +
+            '</table>' +
+            '</tr>' +
+            '</table>' +
+            '</div>' +
+            '</gtable>';
+        $("div[name=tablesdiv]").prepend(markup);
+
+        $('textarea[name=gtable' + uniqud + '_spreadsheetid]').height(0);
+        var height = $('textarea[name=gtable' + uniqud + '_spreadsheetid]').prop('scrollHeight');
+        $('textarea[name=gtable' + uniqud + '_spreadsheetid]').height(height - 6);
+    });
+    // Find and remove selected table rows
+});
+</script>
+<form action="/tables" id="tablesForm" method="POST">
+    <div class="container-fluid">
+        <div style="background-color: #FFFFFF;" class="sticky-top">
+            <div id="messages" class="container-fluid">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+            <div class="container-fluid">
+                <div class="media content-section">
+                    <input type="submit" name="edit" value="Сохранить изменения" class="btn btn-success w-25 mr-2">
+                    <input type="button" name="edit" value="Добавить таблицу" class="btn btn-info add-table w-25">
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <div name="tablesdiv">
+                        {% for table in google_tables %}
+                        <gtable class="media content-section">
+                            <div class="article-metadata w-100">
+                                <table class='table-sm w-100'>
+                                    <tr>
+                                        <td class="w-100">
+                                            <input type="hidden" name="gtable{{ table['id'] }}_id" value="{{ table['id'] }}"">
+                  <textarea style=" resize: none;" class="form-control form-control-sm mb-6 id-input" name="gtable{{ table['id'] }}_spreadsheetid">{{ table['spreadsheet_id'] }}</textarea>
+                                        </td>
+                                        <td class="w-5"><input type="button" name="add_sheet" tableid="{{ table['id'] }}" value="+" class="btn btn-outline-info btn-sm add-row"></td>
+                                        <td class="w-5"><input type="button" name="delete_table" tableid="{{ table['id'] }}" value="X" class="btn btn-outline-danger btn-sm delete-table"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <a href="https://docs.google.com/spreadsheets/d/{{ table['spreadsheet_id'] }}">Перейти в google-таблицы</a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <tr>
+                                    <table name="gtable{{ table['id'] }}" class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Дата</th>
+                                                <th scope="col">Статус</th>
+                                                <th scope="col">Отправлено</th>
+                                                <th scope="col">Текст</th>
+                                                <th scope="col">Номер</th>
+                                                <th scope="col">Лист</th>
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for sheet in google_sheets %}
+                                            {% if sheet.table_id == table.id %}
+                                            <tr sheetid="{{ sheet['id'] }}">
+                                                <td>
+                                                    <input type="hidden" name="spreadsheet{{ sheet['id'] }}_id" value="{{ sheet['id'] }}"">
+                  <input type=" hidden" name="spreadsheet{{ sheet['id'] }}_tableid" value="{{ sheet['table_id'] }}"">
+                  <input type=" text" class="form-control form-control-sm mb-3" name="spreadsheet{{ sheet['id'] }}_datecol" value="{{ sheet['date_col'] }}" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm mb-3" name="spreadsheet{{ sheet['id'] }}_statuscol" value="{{ sheet['status_col'] }}" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm mb-3" name="spreadsheet{{ sheet['id'] }}_sendedcol" value="{{ sheet['sended_col'] }}" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm mb-3" name="spreadsheet{{ sheet['id'] }}_textcol" value="{{ sheet['text_col'] }}" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm mb-3" name="spreadsheet{{ sheet['id'] }}_numbercol" value="{{ sheet['number_col'] }}" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm mb-3" name="spreadsheet{{ sheet['id'] }}_sheetname" value="{{ sheet['sheet_name'] }}" />
+                                                </td>
+                                                <td class="w-5">
+                                                    <input type="button" name="delete_sheet" value="X" class="btn btn-outline-danger btn-sm delete-sheet mb-3 w-100">
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </tr>
+                                </table>
+                            </div>
+                        </gtable>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+</form>
+{% endblock content %}

@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+{% block nav %}
+<h3>Бот ХК-Легенда</h3>
+<a class="menu-active" href="{{url_for('settings')}}">Настройки</a>
+<a href="{{url_for('home')}}">Таблицы</a>
+<a href="{{url_for('show_logs')}}">Логи</a>
+<a href="{{url_for('show_users')}}">Пользователи</a>
+<a class="logout mb-4" href="{{url_for('logout')}}">Выйти</a>
+</div>
+{% endblock nav %}
+{% block content %}
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript" src="https://cdn.rawgit.com/meetselva/attrchange/master/js/attrchange.js"></script>
+<script type="text/javascript">
+$(document).on('paste input', '.form-control', function() {
+
+    if (!$('#save-mesage').length) // use this if you are using id to check
+    {
+        var markup = '<div id="save-mesage" class="alert alert-info">' +
+            'Чтобы применить изменения, нажмите кнопку сохранить' +
+            '</div>';
+        $("#settingsContainer").prepend(markup);
+    }
+});
+
+$(document).on('paste input data-attribute-changed', '.param-input', function() {
+    $(event.target).height(0);
+    var height = $(event.target).prop('scrollHeight');
+    $(event.target).height(height);
+    // for box-sizing other than "content-box" use:
+    // el.style.cssText = '-moz-box-sizing:content-box';
+});
+</script>
+<form action="" method="post" name="tables_form">
+    <div id="settingsContainer" class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <div>
+                    <div class="row">
+                        <div class="col">
+                            <ul class="nav nav-tabs">
+                                <li class="nav-item params-tab"><a class="nav-link active" data-toggle="tab" href="#settings">Настройки</a></li>
+                                <li class="nav-item params-tab"><a class="nav-link" data-toggle="tab" href="#messages">Автоответы</a></li>
+                                <li class="nav-item params-tab"><a class="nav-link" data-toggle="tab" href="#commands">Команды</a></li>
+                            </ul>
+                        </div>
+                        <div class="col">
+                            <input type="submit" name="edit" style="position: absolute; right: 0;" value="Сохранить" class="btn btn-success mr-3">
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <div id="settings" class="tab-pane fade show active">
+                            <gtable class="media content-section">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <th style="width: 30%;" class="settings-names"> Имя параметра </th>
+                                        <th class="mr-8"> Значение параметра </th>
+                                    </tr>
+                                    {% for param in settings %}
+                                    {% if (param.id <= 5) %} <tr>
+                                        <td class="settings-names">{{ param.display_name }}</td>
+                                        <td><input type="hidden" name="param{{ param['id'] }}_id" value="{{ param['id'] }}"">
+                              <div class=" form-group">
+                                            <textarea type="textarea" style="resize: none;" class="form-control param-input" name="param{{ param['id'] }}_paramvalue" />{{ param['param_value'] }}</textarea>
+                        </div>
+                        </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        </table>
+                        </gtable>
+                    </div>
+                    <div id="messages" class="tab-pane fade">
+                        <gtable class="media content-section">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th style="width: 30%;" class="settings-names"> Имя параметра </th>
+                                    <th class="mr-8"> Значение параметра </th>
+                                </tr>
+                                {% for param in settings %}
+                                {% if ((param.id > 5) and (param.id <=14)) %} <tr>
+                                    <td class="settings-names">{{ param.display_name }}</td>
+                                    <td><input type="hidden" name="param{{ param['id'] }}_id" value="{{ param['id'] }}"">
+                              <div class=" form-group">
+                                        <textarea type="textarea" style="resize: none;" class="form-control param-input" name="param{{ param['id'] }}_paramvalue" />{{ param['param_value'] }}</textarea>
+                    </div>
+                    </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    </table>
+                    </gtable>
+                </div>
+                <div id="commands" class="tab-pane fade">
+                    <gtable class="media content-section">
+                        <table class="table table-sm">
+                            <tr>
+                                <th style="width: 30%;" class="settings-names"> Имя параметра </th>
+                                <th class="mr-8"> Значение параметра </th>
+                            </tr>
+                            {% for param in settings %}
+                            {% if (param.id > 14) %}
+                            <tr>
+                                <td class="settings-names">{{ param.display_name }}</td>
+                                <td><input type="hidden" name="param{{ param['id'] }}_id" value="{{ param['id'] }}"">
+                              <div class=" form-group">
+                                    <textarea type="textarea" style="resize: none;" class="form-control param-input" name="param{{ param['id'] }}_paramvalue" />{{ param['param_value'] }}</textarea>
+                </div>
+                </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </table>
+                </gtable>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+</form>
+{% endblock content %}
